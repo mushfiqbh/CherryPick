@@ -1,9 +1,10 @@
 import { Outfit } from "next/font/google";
 import "./globals.css";
-import { AppContextProvider } from "@/context/AppContext";
-import { Toaster } from "react-hot-toast";
-import { AuthContextProvider } from "@/context/AuthContext";
 import { ReactNode } from "react";
+import { Toaster } from "react-hot-toast";
+import { AppContextProvider } from "@/context/AppContext";
+import { AuthContextProvider } from "@/context/AuthContext";
+import { AdminContextProvider } from "@/context/AdminContext";
 
 const outfit = Outfit({ subsets: ["latin"], weight: ["300", "400", "500"] });
 
@@ -18,7 +19,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className={`${outfit.className} antialiased text-gray-700`}>
         <Toaster />
         <AuthContextProvider>
-          <AppContextProvider>{children}</AppContextProvider>
+          <AppContextProvider>
+            <AdminContextProvider>{children}</AdminContextProvider>
+          </AppContextProvider>
         </AuthContextProvider>
       </body>
     </html>

@@ -63,7 +63,7 @@ export const addMultipleProductFS = async (products: Product[]) => {
   }
 };
 
-export const updateProduct = async (
+export const updateProductFS = async (
   productId: string,
   updatedData: Product
 ) => {
@@ -79,7 +79,7 @@ export const updateProduct = async (
   }
 };
 
-export const deleteProduct = async (productId: string) => {
+export const deleteProductFS = async (productId: string) => {
   try {
     const productRef = doc(db, "products", productId);
     await deleteDoc(productRef);

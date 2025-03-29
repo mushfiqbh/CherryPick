@@ -4,12 +4,7 @@ import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useAuthContext } from "./AuthContext";
 import { AppContextState } from "@/types/contextTypes";
-import {
-  getUserCart,
-  addToCartFS,
-  updateCartQuantityFS,
-  removeFromCartFS,
-} from "@/functions/cart";
+import { getUserCart, manageCartFS } from "@/functions/cart";
 import { getProductsFS } from "@/functions/products";
 
 export const AppContext = createContext<AppContextState | null>(null);
@@ -32,7 +27,6 @@ export const AppContextProvider = ({
   const { authUser } = useAuthContext();
 
   const [products, setProducts] = useState<Product[]>([]);
-  const [isSeller, setIsSeller] = useState<boolean>(true);
   const [cartItems, setCartItems] = useState<
     { product: Product; quantity: number }[]
   >([]);
@@ -57,54 +51,6 @@ export const AppContextProvider = ({
     fetchProductData();
   }, []);
 
-  const addToCart = async (productId: string) => {
-    if (!productId) return;
-
-    setCartItems((prevCart) => {
-      const existingItem = prevCart.find(
-        (item) => item.product.id === productId
-      );
-      if (existingItem) {
-        updateCartQuantityFS(authUser.id, productId, 1);
-        return prevCart.map((item) =>
-          item.product.id === productId
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
-      } else {
-        addToCartFS(authUser.id, productId); // sync to firestore
-        const product = products.find((p) => p.id === productId);
-        return product ? [...prevCart, { product, quantity: 1 }] : prevCart;
-      }
-    });
-  };
-
-  const updateCartItemQuantity = async (productId: string, inc: number) => {
-    if (!authUser) return;
-    updateCartQuantityFS(authUser.id, productId, inc);
-
-    setCartItems((prevCart) => {
-      const updatedCart = prevCart.map((item) =>
-        item.product.id === productId
-          ? { ...item, quantity: item.quantity + inc }
-          : item
-      );
-      return updatedCart;
-    });
-  };
-
-  const removeFromCart = async (productId: string) => {
-    if (!authUser) return;
-    removeFromCartFS(authUser.id, productId);
-
-    setCartItems((prevCart) => {
-      const updatedCart = prevCart.filter(
-        (item) => item.product.id !== productId
-      );
-      return updatedCart;
-    });
-  };
-
   const getCartCount = () => {
     return cartItems.reduce((total, item) => total + item.quantity, 0);
   };
@@ -120,20 +66,39 @@ export const AppContextProvider = ({
     );
   };
 
+  const updateCart = (productId: string, quantity: number) => {
+    if (!authUser) return;
+
+    // Fire and Forget
+    manageCartFS(authUser.id, productId, quantity);
+
+    setCartItems((prevCart) => {
+      if (quantity === 0) {
+        return prevCart.filter((item) => item.product.id !== productId);
+      }
+      const existingItem = prevCart.find(
+        (item) => item.product.id === productId
+      );
+      if (existingItem) {
+        return prevCart.map((item) =>
+          item.product.id === productId ? { ...item, quantity } : item
+        );
+      }
+      const product = products.find((p) => p.id === productId);
+      return product ? [...prevCart, { product, quantity }] : prevCart;
+    });
+  };
+
   return (
     <AppContext.Provider
       value={{
         currency,
         router,
-        isSeller,
-        setIsSeller,
         products,
         setProducts,
         cartItems,
+        updateCart,
         setCartItems,
-        addToCart,
-        removeFromCart,
-        updateCartItemQuantity,
         getCartCount,
         getCartAmount,
       }}

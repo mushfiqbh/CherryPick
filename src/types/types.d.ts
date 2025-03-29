@@ -13,17 +13,11 @@ export interface User {
   wishlist?: Product[];
   orders?: string[];
   address?: Address[];
-  createdAt?: number;
-}
-
-export interface Address {
-  type: "billing" | "shipping";
-  phone: number[];
-  street: string;
+  createdAt?: Date;
 }
 
 export interface Product {
-  id?: string;
+  id: string;
   name: string;
   description: string;
   price: number;
@@ -31,14 +25,58 @@ export interface Product {
   images: string[];
   category: string;
   stock: number;
-  createdAt?: number;
+  createdAt?: Date;
+}
+
+export interface Address {
+  id?: string;
+  userId: string;
+  fullName: string;
+  phoneNumber: string;
+  street: string;
+  city: string;
+  state?: string;
+  country: string;
+  postalCode: string;
+  isDefault?: boolean;
+}
+
+export interface PromoCode {
+  id?: string;
+  code: string;
+  discountType: "percentage" | "fixed";
+  discountValue: number; // 10 (10% off) or 10 ($10 off)
+  validFrom: Date;
+  validTo: Date;
+  usageLimit?: number; // Maximum times the promo can be used
+  usedCount?: number; // Track usage count
+  minOrderValue?: number; // Minimum order value required
+  applicableUsers?: string[]; // Array of user IDs allowed
+  status: "active" | "expired";
+}
+
+export interface ShippingFee {
+  id?: string;
+  countryCode: string;
+  standard: number; // Standard shipping fee
+  express: number; // Express shipping fee
+  freeShippingThreshold: number; // Orders above this amount get free shipping
 }
 
 export interface Order {
   id?: string;
   userId: string;
-  items: { productId: string; quantity: number }[];
-  totalAmount: number;
-  status: "pending" | "shipped" | "delivered" | "cancelled";
-  createdAt?: number;
+  products: {
+    productId: string;
+    quantity: number;
+    price: number; // Price at time of order
+  }[];
+  subTotal: number; // Before discounts and shipping
+  discount?: number; // Discount applied
+  promoCode?: string; // Applied promo code
+  shippingFee: number;
+  total: number; // Final total after all calculations
+  address: Address;
+  status: "pending" | "shipped" | "delivered" | "canceled";
+  createdAt: Date;
 }

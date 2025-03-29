@@ -5,7 +5,7 @@ import { Product } from "@/types/types";
 import { useAppContext } from "@/context/AppContext";
 
 const ProductCard = ({ product }: { product: Product }) => {
-  const { currency, router } = useAppContext();
+  const { currency, router, updateCart } = useAppContext();
 
   return (
     <div
@@ -55,7 +55,15 @@ const ProductCard = ({ product }: { product: Product }) => {
           {currency}
           {product.offerPrice}
         </p>
-        <button className=" max-sm:hidden px-4 py-1.5 text-gray-500 border border-gray-500/20 rounded-full text-xs hover:bg-slate-50 transition">
+        <button
+          onClick={() => {
+            if (product) {
+              updateCart(product.id, 1);
+              router.push("/cart");
+            }
+          }}
+          className=" max-sm:hidden px-4 py-1.5 text-gray-500 border border-gray-500/20 rounded-full text-xs hover:bg-slate-300 hover:text-white transition cursor-pointer"
+        >
           Buy now
         </button>
       </div>

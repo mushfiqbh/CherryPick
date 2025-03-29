@@ -1,47 +1,11 @@
 import { db } from "@/lib/firebase";
 import { Product } from "@/types/types";
-import { deleteField, doc, getDoc, increment, updateDoc } from "firebase/firestore";
-
-export const addToCartFS = async (userId: string, productId: string) => {
-  try {
-    const userRef = doc(db, "users", userId);
-    await updateDoc(userRef, {
-      [`cart.${productId}`]: increment(1),
-    });
-  } catch (error) {
-    console.error("Error adding product:", error);
-  }
-};
-
-export const updateCartQuantityFS = async (
-  userId: string,
-  productId: string,
-  inc: number
-) => {
-  try {
-    const userRef = doc(db, "users", userId);
-    await updateDoc(userRef, {
-      [`cart.${productId}`]: increment(inc),
-    });
-  } catch (error) {
-    console.error("Error adding product:", error);
-  }
-};
-
-export const removeFromCartFS = async (userId: string, productId: string) => {
-  try {
-    const userRef = doc(db, "users", userId);
-    const userSnap = await getDoc(userRef);
-
-    if (userSnap.exists()) {
-      await updateDoc(userRef, {
-        [`cart.${productId}`]: deleteField(),
-      });
-    }
-  } catch (error) {
-    console.error("Error removing product from cart:", error);
-  }
-};
+import {
+  deleteField,
+  doc,
+  getDoc,
+  updateDoc,
+} from "firebase/firestore";
 
 export const getUserCart = async (
   userId: string
@@ -82,5 +46,33 @@ export const getUserCart = async (
   } catch (error) {
     console.error("Error fetching user's cart:", error);
     return [];
+  }
+};
+
+export const manageCartFS = async (userId: string, productId: string, quantity: number) => {
+  try {
+    const userRef = doc(db, "users", userId);
+    const userSnap = await getDoc(userRef);
+
+    if (!userSnap.exists()) {
+      console.error("User not found");
+      return;
+    }
+
+    if (quantity === 0) {
+      // Remove product from cart
+      await updateDoc(userRef, {
+        [`cart.${productId}`]: deleteField(),
+      });
+      console.log("Product removed from cart");
+    } else {
+      // Update quantity or add product if not exist
+      await updateDoc(userRef, {
+        [`cart.${productId}`]: quantity,
+      });
+      console.log("Cart updated successfully");
+    }
+  } catch (error) {
+    console.error("Error managing cart:", error);
   }
 };

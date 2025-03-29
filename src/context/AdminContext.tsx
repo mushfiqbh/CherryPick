@@ -1,7 +1,8 @@
+"use client";
 import { AdminContextState } from "@/types/contextTypes";
 import { createContext, useContext, useState } from "react";
 
-const AdminContext = createContext<AdminContextState | null>(null);
+export const AdminContext = createContext<AdminContextState | null>(null);
 
 export const useAdminContext = (): AdminContextState => {
   const context = useContext(AdminContext);
@@ -13,19 +14,24 @@ export const useAdminContext = (): AdminContextState => {
   return context;
 };
 
-const AdminContextProvider = ({ children }: { children: React.ReactNode }) => {
+export const AdminContextProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   const [admin, setAdmin] = useState(null);
+  const [isSeller, setIsSeller] = useState<boolean>(true);
 
   return (
     <AdminContext.Provider
       value={{
         admin,
         setAdmin,
+        isSeller,
+        setIsSeller,
       }}
     >
       {children}
     </AdminContext.Provider>
   );
 };
-
-export default AdminContextProvider;

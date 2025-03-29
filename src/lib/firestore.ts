@@ -6,3 +6,5 @@ export const getUsers = async (): Promise<User[]> => {
   const querySnapshot = await getDocs(collection(db, "users"));
   return querySnapshot.docs.map((doc) => doc.data()) as User[];
 };
+
+// All functions coded in src/functions
