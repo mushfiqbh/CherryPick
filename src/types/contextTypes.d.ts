@@ -20,8 +20,14 @@ interface AppContextState {
   setCartItems: React.Dispatch<
     React.SetStateAction<{ product: Product; quantity: number }[]>
   >;
-  addToCart: (itemId: string) => Promise<void>;
+  addToCart: (productId: string) => Promise<void>;
+  removeFromCart: (productId: string) => Promise<void>;
   updateCartItemQuantity: (itemId: string, quantity: number) => Promise<void>;
   getCartCount: () => number;
   getCartAmount: () => number;
+}
+
+export interface AdminContextState {
+  admin: User | null;
+  setAdmin: React.Dispatch<React.SetStateAction<User>>;
 }

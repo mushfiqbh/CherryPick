@@ -10,12 +10,20 @@ export interface User {
     product: Product;
     quantity: number;
   }[];
+  wishlist?: Product[];
   orders?: string[];
+  address?: Address[];
   createdAt?: number;
 }
 
+export interface Address {
+  type: "billing" | "shipping";
+  phone: number[];
+  street: string;
+}
+
 export interface Product {
-  id: string;
+  id?: string;
   name: string;
   description: string;
   price: number;
@@ -23,14 +31,14 @@ export interface Product {
   images: string[];
   category: string;
   stock: number;
-  createdAt: number;
+  createdAt?: number;
 }
 
 export interface Order {
-  id: string;
+  id?: string;
   userId: string;
   items: { productId: string; quantity: number }[];
   totalAmount: number;
   status: "pending" | "shipped" | "delivered" | "cancelled";
-  createdAt: number;
+  createdAt?: number;
 }

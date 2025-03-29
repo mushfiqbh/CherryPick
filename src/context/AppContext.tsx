@@ -3,14 +3,14 @@ import { Product } from "@/types/types";
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useAuthContext } from "./AuthContext";
+import { AppContextState } from "@/types/contextTypes";
 import {
   getUserCart,
   addToCartFS,
   updateCartQuantityFS,
   removeFromCartFS,
-  getProducts,
-} from "@/lib/firestore";
-import { AppContextState } from "@/types/contextTypes";
+} from "@/functions/cart";
+import { getProductsFS } from "@/functions/products";
 
 export const AppContext = createContext<AppContextState | null>(null);
 
@@ -50,8 +50,7 @@ export const AppContextProvider = ({
 
   useEffect(() => {
     const fetchProductData = async () => {
-      const products = await getProducts();
-
+      const products = await getProductsFS();
       setProducts(products);
     };
 
@@ -59,6 +58,8 @@ export const AppContextProvider = ({
   }, []);
 
   const addToCart = async (productId: string) => {
+    if (!productId) return;
+
     setCartItems((prevCart) => {
       const existingItem = prevCart.find(
         (item) => item.product.id === productId
@@ -119,21 +120,25 @@ export const AppContextProvider = ({
     );
   };
 
-  const value = {
-    currency,
-    router,
-    isSeller,
-    setIsSeller,
-    products,
-    setProducts,
-    cartItems,
-    setCartItems,
-    addToCart,
-    removeFromCart,
-    updateCartItemQuantity,
-    getCartCount,
-    getCartAmount,
-  };
-
-  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
+  return (
+    <AppContext.Provider
+      value={{
+        currency,
+        router,
+        isSeller,
+        setIsSeller,
+        products,
+        setProducts,
+        cartItems,
+        setCartItems,
+        addToCart,
+        removeFromCart,
+        updateCartItemQuantity,
+        getCartCount,
+        getCartAmount,
+      }}
+    >
+      {children}
+    </AppContext.Provider>
+  );
 };
