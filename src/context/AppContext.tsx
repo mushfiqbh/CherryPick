@@ -1,21 +1,14 @@
 "use client";
-import { Product } from "@/types/types";
+import { Address, Product } from "@/types/types";
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useAuthContext } from "./AuthContext";
-import { AppContextState } from "@/types/contextTypes";
+import { AppContextState } from "@/types/states";
 import { getUserCart, manageCartFS } from "@/functions/cart";
 import { getProductsFS } from "@/functions/products";
+import { getAddressesFS } from "@/functions/addresses";
 
 export const AppContext = createContext<AppContextState | null>(null);
-
-export const useAppContext = (): AppContextState => {
-  const context = useContext(AppContext);
-  if (!context) {
-    throw new Error("useAppContext must be used within an AppContextProvider");
-  }
-  return context;
-};
 
 export const AppContextProvider = ({
   children,
@@ -25,11 +18,20 @@ export const AppContextProvider = ({
   const currency = process.env.NEXT_PUBLIC_CURRENCY;
   const router = useRouter();
   const { authUser } = useAuthContext();
-
   const [products, setProducts] = useState<Product[]>([]);
+  const [addresses, setAddresses] = useState<Address[]>([]);
   const [cartItems, setCartItems] = useState<
     { product: Product; quantity: number }[]
   >([]);
+
+  useEffect(() => {
+    const fetchProductData = async () => {
+      const allProducts = await getProductsFS();
+      setProducts(allProducts);
+    };
+
+    fetchProductData();
+  }, []);
 
   useEffect(() => {
     if (!authUser) return;
@@ -39,17 +41,16 @@ export const AppContextProvider = ({
       setCartItems(cart);
     };
 
-    fetchCart();
-  }, [authUser]);
-
-  useEffect(() => {
-    const fetchProductData = async () => {
-      const products = await getProductsFS();
-      setProducts(products);
+    const fetchAddresses = async () => {
+      if (authUser) {
+        const allAddresses = await getAddressesFS(authUser?.id);
+        setAddresses(allAddresses);
+      }
     };
 
-    fetchProductData();
-  }, []);
+    fetchCart();
+    fetchAddresses();
+  }, [authUser]);
 
   const getCartCount = () => {
     return cartItems.reduce((total, item) => total + item.quantity, 0);
@@ -96,6 +97,8 @@ export const AppContextProvider = ({
         router,
         products,
         setProducts,
+        addresses,
+        setAddresses,
         cartItems,
         updateCart,
         setCartItems,
@@ -106,4 +109,12 @@ export const AppContextProvider = ({
       {children}
     </AppContext.Provider>
   );
+};
+
+export const useAppContext = (): AppContextState => {
+  const context = useContext(AppContext);
+  if (!context) {
+    throw new Error("useAppContext must be used within an AppContextProvider");
+  }
+  return context;
 };

@@ -1,5 +1,4 @@
 "use client";
-
 import { createContext, useContext, useState, useEffect } from "react";
 import {
   OAuthProvider,
@@ -12,19 +11,9 @@ import { auth, db } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { User } from "@/types/types";
-import { AuthContextState } from "@/types/contextTypes";
+import { AuthContextState } from "@/types/states";
 
 const AuthContext = createContext<AuthContextState | null>(null);
-
-export const useAuthContext = (): AuthContextState => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error(
-      "useAuthContext must be used within an AuthContextProvider"
-    );
-  }
-  return context;
-};
 
 export const AuthContextProvider = ({
   children,
@@ -141,4 +130,14 @@ export const AuthContextProvider = ({
       {children}
     </AuthContext.Provider>
   );
+};
+
+export const useAuthContext = (): AuthContextState => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error(
+      "useAuthContext must be used within an AuthContextProvider"
+    );
+  }
+  return context;
 };

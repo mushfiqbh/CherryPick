@@ -3,16 +3,14 @@ export interface User {
   email: string | null;
   displayName: string | null;
   photoURL: string | null;
-  name?: string;
-  phone?: string;
-  address?: string;
+  phoneNumber?: string;
   cart?: {
     product: Product;
     quantity: number;
   }[];
   wishlist?: Product[];
   orders?: string[];
-  address?: Address[];
+  addresses?: string[];
   createdAt?: Date;
 }
 
@@ -29,8 +27,9 @@ export interface Product {
 }
 
 export interface Address {
-  id?: string;
+  id: string;
   userId: string;
+  
   fullName: string;
   phoneNumber: string;
   street: string;

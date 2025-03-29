@@ -1,5 +1,6 @@
+import { Dispatch, SetStateAction } from "react";
 import { AppRouterInstance } from "next/navigation";
-import { Product } from "@/types/types";
+import { User, Product } from "@/types/types";
 
 export interface AuthContextState {
   authUser: User | null;
@@ -13,10 +14,12 @@ interface AppContextState {
   currency: string | undefined;
   router: AppRouterInstance;
   products: Product[];
-  setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
+  setProducts: Dispatch<SetStateAction<Product[]>>;
+  addresses: Address[];
+  setAddresses: Dispatch<SetStateAction<Address[]>>;
   cartItems: { product: Product; quantity: number }[];
-  setCartItems: React.Dispatch<
-    React.SetStateAction<{ product: Product; quantity: number }[]>
+  setCartItems: Dispatch<
+    SetStateAction<{ product: Product; quantity: number }[]>
   >;
   getCartCount: () => number;
   getCartAmount: () => number;
@@ -25,7 +28,7 @@ interface AppContextState {
 
 export interface AdminContextState {
   admin: User | null;
-  setAdmin: React.Dispatch<React.SetStateAction<User>>;
+  setAdmin: Dispatch<SetStateAction<User | null>>;
   isSeller: boolean;
-  setIsSeller: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsSeller: Dispatch<SetStateAction<boolean>>;
 }
