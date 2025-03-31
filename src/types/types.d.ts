@@ -13,6 +13,7 @@ export interface User {
   orders?: string[];
   addresses?: string[];
   createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface Product {
@@ -25,6 +26,7 @@ export interface Product {
   category: string;
   stock: number;
   createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface Address {
@@ -70,5 +72,6 @@ export interface Order {
   total: number;
   address: Address;
   status: "pending" | "shipped" | "delivered" | "canceled";
-  createdAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }

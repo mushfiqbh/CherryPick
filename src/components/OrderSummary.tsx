@@ -146,6 +146,7 @@ const OrderSummary = () => {
     if (promoId) {
       updatePromoUsageFS(promoId);
     }
+    router.push("/order-placed");
   };
 
   return (
@@ -279,7 +280,7 @@ const OrderSummary = () => {
 
       <button
         onClick={createOrder}
-        className="w-full bg-orange-600 text-white py-3 mt-5 hover:bg-orange-700"
+        className="w-full bg-orange-600 text-white py-3 mt-5 hover:bg-orange-700 cursor-pointer"
       >
         Place Order
       </button>

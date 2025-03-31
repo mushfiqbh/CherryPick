@@ -12,11 +12,13 @@ import {
   where,
 } from "firebase/firestore";
 
+const promosCollection = collection(db, "promos");
+
 export const getPromoFS = async (
   promoCode: string
 ): Promise<PromoCode | null> => {
   try {
-    const q = query(collection(db, "promos"), where("code", "==", promoCode));
+    const q = query(promosCollection, where("code", "==", promoCode));
     const querySnapshot = await getDocs(q);
 
     if (querySnapshot.empty) {
@@ -34,7 +36,7 @@ export const addPromoFS = async (promo: PromoCode) => {
   try {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id, ...rest } = promo;
-    await addDoc(collection(db, "promos"), rest);
+    await addDoc(promosCollection, rest);
     console.log("Promocode added succesfully");
   } catch (error) {
     console.error(error);
@@ -44,7 +46,7 @@ export const addPromoFS = async (promo: PromoCode) => {
 export const updatePromoCodeFS = async (promo: PromoCode) => {
   try {
     const { id, ...rest } = promo;
-    const promoRef = doc(collection(db, "promos"), id);
+    const promoRef = doc(promosCollection, id);
     const updated = await updateDoc(promoRef, { ...rest });
     console.log("Promo updated successfully");
     return updated;
@@ -55,7 +57,7 @@ export const updatePromoCodeFS = async (promo: PromoCode) => {
 
 export const deletePromoFS = async (promoId: string) => {
   try {
-    const promoRef = doc(db, "promos", promoId);
+    const promoRef = doc(promosCollection, promoId);
     await deleteDoc(promoRef);
     console.log("Promo deleted successfully");
   } catch (error) {
@@ -65,16 +67,16 @@ export const deletePromoFS = async (promoId: string) => {
 
 export const updatePromoUsageFS = async (promoId: string) => {
   try {
-    const promoRef = doc(db, "promos", promoId);
+    const promoRef = doc(promosCollection, promoId);
     await runTransaction(db, async (transaction) => {
       const promoSnap = await transaction.get(promoRef);
       if (!promoSnap.exists()) {
         throw new Error("Promo not found");
       }
-      
+
       const promoData = promoSnap.data();
       const usedCount = (promoData.usedCount || 0) + 1;
-      
+
       transaction.update(promoRef, { usedCount });
     });
 

@@ -10,11 +10,13 @@ import {
   updateDoc,
 } from "firebase/firestore";
 
+const productsCollection = collection(db, "products");
+
 export const getProductsFS = async (): Promise<Product[]> => {
   const products: Product[] = [];
 
   try {
-    const querySnapshot = await getDocs(collection(db, "products"));
+    const querySnapshot = await getDocs(productsCollection);
 
     querySnapshot.docs.forEach((doc) => {
       const productData = doc.data();
@@ -36,12 +38,11 @@ export const addProductFS = async (product: Product) => {
   try {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id, ...rest } = product;
-    const productCollection = collection(db, "products");
     const productWithTimestamp = {
       ...rest,
       createdAt: serverTimestamp(),
     };
-    await addDoc(productCollection, productWithTimestamp);
+    await addDoc(productsCollection, productWithTimestamp);
     console.log("Product added successfully");
   } catch (error) {
     console.error("Error adding product: ", error);
@@ -50,7 +51,6 @@ export const addProductFS = async (product: Product) => {
 
 export const addMultipleProductFS = async (products: Product[]) => {
   try {
-    const productCollection = collection(db, "products");
     const batchPromises = products.map(async (product) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { id, ...rest } = product;
@@ -58,7 +58,7 @@ export const addMultipleProductFS = async (products: Product[]) => {
         ...rest,
         createdAt: serverTimestamp(),
       };
-      return addDoc(productCollection, productWithTimestamp);
+      return addDoc(productsCollection, productWithTimestamp);
     });
     await Promise.all(batchPromises);
     console.log("Products added successfully");
@@ -70,7 +70,7 @@ export const addMultipleProductFS = async (products: Product[]) => {
 export const updateProductFS = async (product: Product) => {
   try {
     const { id, ...rest } = product;
-    const productRef = doc(db, "products", id);
+    const productRef = doc(productsCollection, id);
     await updateDoc(productRef, {
       ...rest,
       updatedAt: serverTimestamp(),
@@ -83,7 +83,7 @@ export const updateProductFS = async (product: Product) => {
 
 export const deleteProductFS = async (productId: string) => {
   try {
-    const productRef = doc(db, "products", productId);
+    const productRef = doc(productsCollection, productId);
     await deleteDoc(productRef);
     console.log("Product deleted successfully");
   } catch (error) {

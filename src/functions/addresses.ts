@@ -12,12 +12,13 @@ import {
   updateDoc,
 } from "firebase/firestore";
 
+const addressesCollection = collection(db, "addresses");
+
 export const addAddressFS = async (userId: string, address: Address) => {
   try {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id, ...rest } = address;
-    const addressRef = collection(db, "addresses");
-    const docRef = await addDoc(addressRef, { ...rest, userId });
+    const docRef = await addDoc(addressesCollection, { ...rest, userId });
 
     const userRef = doc(db, "users", userId);
     await updateDoc(userRef, {
@@ -32,7 +33,7 @@ export const addAddressFS = async (userId: string, address: Address) => {
 
 export const removeAddressFS = async (userId: string, addressId: string) => {
   try {
-    const addressRef = doc(db, "addresses", addressId);
+    const addressRef = doc(addressesCollection, addressId);
     await deleteDoc(addressRef);
 
     const userRef = doc(db, "users", userId);
@@ -49,7 +50,7 @@ export const removeAddressFS = async (userId: string, addressId: string) => {
 export const updateAddressFS = async (address: Address) => {
   try {
     const { id, ...rest } = address;
-    const addressRef = doc(db, "addresses", id);
+    const addressRef = doc(addressesCollection, id);
     await setDoc(addressRef, rest);
     console.log("Address updated successfully");
   } catch (error) {
@@ -70,7 +71,7 @@ export const getAddressesFS = async (userId: string) => {
     if (addressIds.length === 0) return [];
 
     const addressPromises = addressIds.map((id: string) =>
-      getDoc(doc(db, "addresses", id))
+      getDoc(doc(addressesCollection, id))
     );
     const addressSnapshots = await Promise.all(addressPromises);
 
