@@ -1,19 +1,152 @@
 import { useAppContext } from "@/context/AppContext";
+import { useAuthContext } from "@/context/AuthContext";
+import { getPromoFS, updatePromoUsageFS } from "@/functions/promos";
 import { Address } from "@/types/types";
-import React, { useState } from "react";
+import { Timestamp } from "firebase/firestore";
+import React, { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 const OrderSummary = () => {
-  const { addresses } = useAppContext();
-  const { currency, router, getCartCount, getCartAmount } = useAppContext();
+  const { authUser } = useAuthContext();
+  const { currency, router, cartItems, addresses, getCartCount } =
+    useAppContext();
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+  const [promoCode, setPromoCode] = useState<string>("");
+  const [promoId, setPromoId] = useState<string>("");
+  const [pricing, setPricing] = useState<{
+    price: number;
+    shippingFee: number;
+    tax: number;
+    discount: number;
+  }>({ price: 0, shippingFee: 0, tax: 2, discount: 0 });
 
   const handleAddressSelect = (address: Address) => {
     setSelectedAddress(address);
     setIsDropdownOpen(false);
   };
 
-  const createOrder = async () => {};
+  const applyPromoCode = async () => {
+    const promo = await getPromoFS(promoCode);
+
+    if (!promo) {
+      toast("Promocode Not Found");
+      return;
+    }
+
+    if (promo.status === "expired") {
+      toast("Sorry, This Promocode is Expired");
+      return;
+    }
+
+    const date = new Date();
+
+    const validFrom =
+      promo.validFrom instanceof Timestamp
+        ? promo.validFrom.toDate()
+        : new Date(promo.validFrom);
+    const validTo =
+      promo.validTo instanceof Timestamp
+        ? promo.validTo.toDate()
+        : new Date(promo.validTo);
+
+    if (date < validFrom) {
+      toast(`This Promocode will be available on ${validFrom.toDateString()}`);
+      return;
+    }
+
+    if (date > validTo) {
+      toast("This Promocode is Expired");
+      return;
+    }
+
+    if (promo.usedCount === promo.usageLimit) {
+      toast("Sorry, This Promocode usage limit reached");
+      return;
+    }
+
+    if (pricing.price < promo.minOrderValue) {
+      toast(
+        `Sorry, Minimum order price for this promo is ${promo.minOrderValue}`
+      );
+      return;
+    }
+
+    if (promo.applicableUsers?.length && authUser) {
+      if (!promo.applicableUsers.includes(authUser.id)) {
+        toast("You are not eligible for this promo");
+        return;
+      }
+    }
+
+    if (promo.applicableProducts?.length && cartItems) {
+      let isNotApplicable = true;
+      promo.applicableProducts.forEach((productId) => {
+        cartItems.forEach((item) => {
+          if (item.product.id === productId) {
+            isNotApplicable = false;
+          }
+        });
+      });
+
+      if (isNotApplicable) {
+        return;
+      }
+    }
+
+    setPricing(() => {
+      const discount =
+        promo.discountType === "fixed"
+          ? promo.discountValue
+          : Math.round((pricing.price * promo.discountValue) / 100);
+
+      return {
+        ...pricing,
+        discount,
+      };
+    });
+
+    setPromoId(promo.id);
+  };
+
+  const removePromoCode = () => {
+    setPricing(() => {
+      return {
+        ...pricing,
+        discount: 0,
+      };
+    });
+    setPromoId("");
+  };
+
+  useEffect(() => {
+    const totalAmount = cartItems.reduce((total, item) => {
+      const price = item.product.offerPrice ?? item.product.price;
+      return total + price * item.quantity;
+    }, 0);
+
+    const getShippingFee = () => {
+      if (selectedAddress && selectedAddress.state === "Dhaka") {
+        return 60;
+      } else {
+        return 120;
+      }
+    };
+
+    setPricing((prev) => {
+      return {
+        ...prev,
+        price: totalAmount,
+        shippingFee: getShippingFee(),
+      };
+    });
+  }, [cartItems, selectedAddress]);
+
+  const createOrder = async () => {
+    if (promoId) {
+      updatePromoUsageFS(promoId);
+    }
+  };
 
   return (
     <div className="w-full md:w-96 bg-gray-500/5 p-5">
@@ -84,11 +217,16 @@ const OrderSummary = () => {
           <div className="flex flex-col items-start gap-3">
             <input
               type="text"
+              value={promoCode}
+              onChange={(e) => setPromoCode(e.target.value)}
               placeholder="Enter promo code"
               className="flex-grow w-full outline-none p-2.5 text-gray-600 border"
             />
-            <button className="bg-orange-600 text-white px-9 py-2 hover:bg-orange-700">
-              Apply
+            <button
+              onClick={promoId ? removePromoCode : applyPromoCode}
+              className="bg-orange-600 text-white px-9 py-2 hover:bg-orange-700 cursor-pointer"
+            >
+              {promoId ? "Remove" : "Apply"}
             </button>
           </div>
         </div>
@@ -100,25 +238,40 @@ const OrderSummary = () => {
             <p className="uppercase text-gray-600">Items {getCartCount()}</p>
             <p className="text-gray-800">
               {currency}
-              {getCartAmount()}
+              {pricing.price}
             </p>
           </div>
           <div className="flex justify-between">
             <p className="text-gray-600">Shipping Fee</p>
-            <p className="font-medium text-gray-800">Free</p>
+            <p className="font-medium text-gray-800">
+              {pricing.shippingFee || "Free"}
+            </p>
           </div>
           <div className="flex justify-between">
-            <p className="text-gray-600">Tax (2%)</p>
+            <p className="text-gray-600">Tax ({pricing.tax}%)</p>
             <p className="font-medium text-gray-800">
               {currency}
-              {Math.floor(getCartAmount() * 0.02)}
+              {Math.floor(pricing.price * pricing.tax) / 100}
+            </p>
+          </div>
+          <div className="flex justify-between">
+            <p className="text-gray-600">Discount</p>
+            <p className="font-medium text-gray-800">
+              {currency}
+              {pricing.discount}
             </p>
           </div>
           <div className="flex justify-between text-lg md:text-xl font-medium border-t pt-3">
             <p>Total</p>
             <p>
               {currency}
-              {getCartAmount() + Math.floor(getCartAmount() * 0.02)}
+              {Math.floor(
+                (pricing.price +
+                  pricing.shippingFee +
+                  Math.floor(pricing.price * pricing.tax) / 100 -
+                  pricing.discount) *
+                  100
+              ) / 100}
             </p>
           </div>
         </div>

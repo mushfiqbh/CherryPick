@@ -56,17 +56,6 @@ export const AppContextProvider = ({
     return cartItems.reduce((total, item) => total + item.quantity, 0);
   };
 
-  const getCartAmount = () => {
-    return (
-      Math.floor(
-        cartItems.reduce((total, item) => {
-          const price = item.product.offerPrice ?? item.product.price;
-          return total + price * item.quantity;
-        }, 0) * 100
-      ) / 100
-    );
-  };
-
   const updateCart = (productId: string, quantity: number) => {
     if (!authUser) return;
 
@@ -103,7 +92,6 @@ export const AppContextProvider = ({
         updateCart,
         setCartItems,
         getCartCount,
-        getCartAmount,
       }}
     >
       {children}

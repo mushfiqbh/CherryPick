@@ -48,8 +48,9 @@ export const removeAddressFS = async (userId: string, addressId: string) => {
 
 export const updateAddressFS = async (address: Address) => {
   try {
-    const addressRef = doc(db, "addresses", address.id);
-    await setDoc(addressRef, address);
+    const { id, ...rest } = address;
+    const addressRef = doc(db, "addresses", id);
+    await setDoc(addressRef, rest);
     console.log("Address updated successfully");
   } catch (error) {
     console.error("Error updating address: ", error);

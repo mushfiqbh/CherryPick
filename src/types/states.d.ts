@@ -22,7 +22,6 @@ interface AppContextState {
     SetStateAction<{ product: Product; quantity: number }[]>
   >;
   getCartCount: () => number;
-  getCartAmount: () => number;
   updateCart: (productId: string, quantity: number) => void;
 }
 

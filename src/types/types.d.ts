@@ -29,7 +29,6 @@ export interface Product {
 export interface Address {
   id: string;
   userId: string;
-  
   fullName: string;
   phoneNumber: string;
   street: string;
@@ -41,25 +40,26 @@ export interface Address {
 }
 
 export interface PromoCode {
-  id?: string;
+  id: string;
   code: string;
   discountType: "percentage" | "fixed";
-  discountValue: number; // 10 (10% off) or 10 ($10 off)
+  discountValue: number;
   validFrom: Date;
   validTo: Date;
-  usageLimit?: number; // Maximum times the promo can be used
-  usedCount?: number; // Track usage count
-  minOrderValue?: number; // Minimum order value required
-  applicableUsers?: string[]; // Array of user IDs allowed
+  usageLimit?: number;
+  usedCount?: number;
+  minOrderValue: number;
+  applicableUsers?: string[];
+  applicableProducts?: string[];
   status: "active" | "expired";
 }
 
 export interface ShippingFee {
   id?: string;
   countryCode: string;
-  standard: number; // Standard shipping fee
-  express: number; // Express shipping fee
-  freeShippingThreshold: number; // Orders above this amount get free shipping
+  standard: number;
+  express: number;
+  freeShippingThreshold: number;
 }
 
 export interface Order {
@@ -68,13 +68,13 @@ export interface Order {
   products: {
     productId: string;
     quantity: number;
-    price: number; // Price at time of order
+    price: number;
   }[];
-  subTotal: number; // Before discounts and shipping
-  discount?: number; // Discount applied
-  promoCode?: string; // Applied promo code
+  subTotal: number;
+  discount?: number;
+  promoCode?: string;
   shippingFee: number;
-  total: number; // Final total after all calculations
+  total: number;
   address: Address;
   status: "pending" | "shipped" | "delivered" | "canceled";
   createdAt: Date;

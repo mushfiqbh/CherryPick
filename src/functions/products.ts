@@ -34,9 +34,11 @@ export const getProductsFS = async (): Promise<Product[]> => {
 
 export const addProductFS = async (product: Product) => {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { id, ...rest } = product;
     const productCollection = collection(db, "products");
     const productWithTimestamp = {
-      ...product,
+      ...rest,
       createdAt: serverTimestamp(),
     };
     await addDoc(productCollection, productWithTimestamp);
@@ -50,8 +52,10 @@ export const addMultipleProductFS = async (products: Product[]) => {
   try {
     const productCollection = collection(db, "products");
     const batchPromises = products.map(async (product) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { id, ...rest } = product;
       const productWithTimestamp = {
-        ...product,
+        ...rest,
         createdAt: serverTimestamp(),
       };
       return addDoc(productCollection, productWithTimestamp);
@@ -63,14 +67,12 @@ export const addMultipleProductFS = async (products: Product[]) => {
   }
 };
 
-export const updateProductFS = async (
-  productId: string,
-  updatedData: Product
-) => {
+export const updateProductFS = async (product: Product) => {
   try {
-    const productRef = doc(db, "products", productId);
+    const { id, ...rest } = product;
+    const productRef = doc(db, "products", id);
     await updateDoc(productRef, {
-      ...updatedData,
+      ...rest,
       updatedAt: serverTimestamp(),
     });
     console.log("Product updated successfully");
