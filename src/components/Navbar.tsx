@@ -4,9 +4,11 @@ import { assets } from "@/assets/assets";
 import Link from "next/link";
 import { useAppContext } from "@/context/AppContext";
 import Image from "next/image";
+import { useAuthContext } from "@/context/AuthContext";
 
 const Navbar = () => {
-  const { isSeller, router } = useAppContext();
+  const { router } = useAppContext();
+  const { authUser } = useAuthContext();
 
   return (
     <nav className="min-h-16 flex items-center justify-between px-6 md:px-16 lg:px-32 py-0 border-b border-gray-300 text-gray-700">
@@ -32,7 +34,7 @@ const Navbar = () => {
           Contact
         </Link>
 
-        {isSeller && (
+        {authUser?.role === "seller" && (
           <button
             onClick={() => router.push("/seller")}
             className="text-xs border px-4 py-1.5 rounded-full"
@@ -51,7 +53,7 @@ const Navbar = () => {
       </ul>
 
       <div className="flex items-center md:hidden gap-3">
-        {isSeller && (
+        {authUser?.role === "seller" && (
           <button
             onClick={() => router.push("/seller")}
             className="text-xs border px-4 py-1.5 rounded-full"

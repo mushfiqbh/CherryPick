@@ -36,11 +36,12 @@ export const AuthContextProvider = ({
         const userRef = doc(db, "users", user.uid);
         const userSnap = await getDoc(userRef);
 
-        let userData = {
+        let userData: User = {
           id: user.uid,
           email: user.email,
           displayName: user.displayName,
           photoURL: user.photoURL,
+          role: "buyer",
         };
 
         if (userSnap.exists()) {
@@ -64,11 +65,12 @@ export const AuthContextProvider = ({
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      const userData = {
+      const userData: User = {
         id: user.uid,
         email: user.email,
         displayName: user.displayName,
         photoURL: user.photoURL,
+        role: "buyer",
       };
 
       await saveUserToFirestore(userData);
@@ -82,11 +84,12 @@ export const AuthContextProvider = ({
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      const userData = {
+      const userData: User = {
         id: user.uid,
         email: user.email,
         displayName: user.displayName,
         photoURL: user.photoURL,
+        role: "buyer",
       };
 
       await saveUserToFirestore(userData);

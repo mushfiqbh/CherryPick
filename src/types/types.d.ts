@@ -3,6 +3,7 @@ export interface User {
   email: string | null;
   displayName: string | null;
   photoURL: string | null;
+  role: "buyer" | "seller";
   phoneNumber?: string;
   cart?: {
     product: Product;
@@ -52,14 +53,6 @@ export interface PromoCode {
   applicableUsers?: string[];
   applicableProducts?: string[];
   status: "active" | "expired";
-}
-
-export interface ShippingFee {
-  id?: string;
-  countryCode: string;
-  standard: number;
-  express: number;
-  freeShippingThreshold: number;
 }
 
 export interface Order {
