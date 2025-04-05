@@ -1,4 +1,6 @@
 import logo from "./CherryPick_Brand.png";
+import checkedIcon from "./icons8_check.png";
+import uncheckedIcon from "./icons8_uncheck.png";
 import search_icon from "./search_icon.svg";
 import user_icon from "./user_icon.svg";
 import cart_icon from "./cart_icon.svg";
@@ -49,6 +51,8 @@ import product_details_page_apple_earphone_image5 from "./product_details_page_a
 
 export const assets = {
   logo,
+  checkedIcon,
+  uncheckedIcon,
   search_icon,
   user_icon,
   cart_icon,
