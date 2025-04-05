@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction } from "react";
 import { AppRouterInstance } from "next/navigation";
-import { User, Product } from "@/types/types";
+import { User, Product, Order, Address } from "@/types/types";
 
 export interface AuthContextState {
   authUser: User | null;
@@ -13,6 +13,8 @@ export interface AuthContextState {
 interface AppContextState {
   currency: string | undefined;
   router: AppRouterInstance;
+  order: Order;
+  setOrder: Dispatch<SetStateAction<Order>>;
   products: Product[];
   setProducts: Dispatch<SetStateAction<Product[]>>;
   addresses: Address[];

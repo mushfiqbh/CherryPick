@@ -1,3 +1,5 @@
+import { Timestamp } from "firebase/firestore";
+
 export interface User {
   id: string;
   email: string | null;
@@ -9,6 +11,7 @@ export interface User {
     product: Product;
     quantity: number;
   }[];
+  orderIds: string[];
   wishlist?: Product[];
   orders?: string[];
   addresses?: string[];
@@ -34,9 +37,10 @@ export interface Address {
   userId: string;
   fullName: string;
   phoneNumber: string;
-  street: string;
-  city: string;
-  state?: string;
+  area: string;
+  upazila: string;
+  district: string;
+  division: string;
   country: string;
   postalCode: string;
   isDefault?: boolean;
@@ -57,21 +61,58 @@ export interface PromoCode {
   status: "active" | "expired";
 }
 
+export interface Payment {
+  cashPay: number;
+  advancePay: number;
+  status: "COD" | "paid" | "unpaid" | "pending" | "failed";
+  senderNumber?: string;
+  sentTime?: string;
+  method: string;
+  type: "full" | "partial";
+}
+
 export interface Order {
-  id?: string;
+  id: string;
   userId: string;
   products: {
-    productId: string;
+    product: Product;
     quantity: number;
-    price: number;
   }[];
   subTotal: number;
-  discount?: number;
-  promoCode?: string;
+  discount: number;
   shippingFee: number;
+  promoId: string;
   total: number;
   address: Address;
-  status: "pending" | "shipped" | "delivered" | "canceled";
-  createdAt?: Date;
+  payment: Payment;
+  marchant?: {
+    name: string;
+    phoneNumber: string;
+    email: string;
+  };
+  status:
+    | "pending"
+    | "shipped"
+    | "onrider"
+    | "delivered"
+    | "canceled"
+    | "unpaid"
+    | "declined";
+  createdAt?: Timestamp;
   updatedAt?: Date;
+}
+
+export interface Division {
+  id: string;
+  name: string;
+}
+
+export interface District {
+  id: string;
+  name: string;
+}
+
+export interface Upazila {
+  id: string;
+  name: string;
 }

@@ -2,16 +2,17 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useEffect, useState } from "react";
-import { Address } from "@/types/types";
+import { Address, District, Division, Upazila } from "@/types/types";
+import { useAppContext } from "@/context/AppContext";
+import { useAuthContext } from "@/context/AuthContext";
+import Loading from "@/components/Loading";
 import toast from "react-hot-toast";
+import axios from "axios";
 import {
   addAddressFS,
   removeAddressFS,
   updateAddressFS,
 } from "@/functions/addresses";
-import { useAppContext } from "@/context/AppContext";
-import { useAuthContext } from "@/context/AuthContext";
-import Loading from "@/components/Loading";
 
 const AddAddress = () => {
   const { authUser } = useAuthContext();
@@ -22,13 +23,17 @@ const AddAddress = () => {
     userId: "",
     fullName: "",
     phoneNumber: "",
-    street: "",
-    city: "",
-    state: "",
+    area: "",
+    upazila: "",
+    district: "",
+    division: "",
     country: "",
     postalCode: "",
     isDefault: false,
   });
+  const [divisions, setDivisions] = useState<Division[]>([]);
+  const [districts, setDistricts] = useState<District[]>([]);
+  const [upazilas, setUpazilas] = useState<Upazila[]>([]);
 
   useEffect(() => {
     if (addresses.length) {
@@ -36,16 +41,47 @@ const AddAddress = () => {
     }
   }, [addresses]);
 
+  useEffect(() => {
+    axios.get("https://bdapi.vercel.app/api/v.1/division").then((res) => {
+      setDivisions(res.data.data);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (address.division) {
+      const divisionId = divisions.find(({ id, name }) => {
+        if (name === address.division) {
+          return id;
+        }
+      });
+      axios
+        .get(`https://bdapi.vercel.app/api/v.1/district/${divisionId}`)
+        .then((res) => {
+          setDistricts(res.data.data);
+          setUpazilas([]);
+        });
+    }
+  }, [address.division, divisions]);
+
+  useEffect(() => {
+    if (address.district) {
+      const districtId = districts.find(({ id, name }) => {
+        if (name === address.district) {
+          return id;
+        }
+      });
+      axios
+        .get(`https://bdapi.vercel.app/api/v.1/upazilla/${districtId}`)
+        .then((res) => {
+          setUpazilas(res.data.data);
+        });
+    }
+  }, [address.district, districts]);
+
   const removeAddress = (userId: string, addressId: string) => {
     removeAddressFS(userId, addressId);
     const updated = addresses.filter((adrs) => adrs.id !== addressId);
     setAddresses(updated);
-  };
-
-  const onChangeHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target;
-
-    setAddress((prevAddress) => ({ ...prevAddress, [name]: value }));
   };
 
   const onSubmitHandler = async (e: React.FormEvent) => {
@@ -71,9 +107,10 @@ const AddAddress = () => {
         userId: "",
         fullName: "",
         phoneNumber: "",
-        street: "",
-        city: "",
-        state: "",
+        area: "",
+        upazila: "",
+        district: "",
+        division: "",
         country: "",
         postalCode: "",
         isDefault: false,
@@ -105,14 +142,19 @@ const AddAddress = () => {
                   <p className="font-semibold">{adrs.fullName}</p>
                   <p className="text-sm text-gray-600">{adrs.phoneNumber}</p>
                   <p className="text-sm">
-                    {adrs.street}, {adrs.city}, {adrs.state} - {adrs.postalCode}
+                    {adrs.area}, {adrs.upazila}, {adrs.district} -{" "}
+                    {adrs.postalCode}
                   </p>
-                  <p className="text-sm">{adrs.country}</p>
+                  <p className="text-sm">
+                    {adrs.division}, {adrs.country}
+                  </p>
 
                   <div className="flex space-x-2 mt-2">
                     <button
                       className="bg-blue-500 text-white px-3 py-1 rounded cursor-pointer"
-                      onClick={() => setAddress(adrs)}
+                      onClick={() => {
+                        setAddress(adrs);
+                      }}
                     >
                       Edit
                     </button>
@@ -137,82 +179,103 @@ const AddAddress = () => {
           </p>
 
           <div className="space-y-3 max-w-sm mt-10">
-            {/* Full Name */}
             <input
-              className="px-2 py-2.5 focus:border-orange-500 transition border border-gray-500/30 rounded outline-none w-full text-gray-500"
+              className="px-2 py-2.5 border rounded w-full"
               type="text"
               name="fullName"
               placeholder="Full name"
-              onChange={onChangeHandler}
               value={address.fullName}
+              onChange={(e) =>
+                setAddress({ ...address, fullName: e.target.value })
+              }
             />
-
-            {/* Phone Number */}
             <input
-              className="px-2 py-2.5 focus:border-orange-500 transition border border-gray-500/30 rounded outline-none w-full text-gray-500"
+              className="px-2 py-2.5 border rounded w-full"
               type="text"
               name="phoneNumber"
               placeholder="Phone number"
-              onChange={onChangeHandler}
               value={address.phoneNumber}
+              onChange={(e) =>
+                setAddress({ ...address, phoneNumber: e.target.value })
+              }
             />
-
-            {/* Postal Code */}
             <input
-              className="px-2 py-2.5 focus:border-orange-500 transition border border-gray-500/30 rounded outline-none w-full text-gray-500"
+              className="px-2 py-2.5 border rounded w-full"
               type="text"
               name="postalCode"
               placeholder="Postal Code"
-              onChange={onChangeHandler}
               value={address.postalCode}
+              onChange={(e) =>
+                setAddress({ ...address, postalCode: e.target.value })
+              }
+            />
+            <input
+              className="px-2 py-2.5 border rounded w-full"
+              type="text"
+              name="area"
+              placeholder="Street Address (Area and Street)"
+              value={address.area}
+              onChange={(e) => setAddress({ ...address, area: e.target.value })}
             />
 
-            {/* Street Address */}
+            <select
+              className="w-full p-2 border rounded"
+              value={address.division}
+              onChange={(e) =>
+                setAddress({ ...address, division: e.target.value })
+              }
+            >
+              <option value="">Select Division</option>
+              {divisions.map((division) => (
+                <option key={division.id} value={division.name}>
+                  {division.name}
+                </option>
+              ))}
+            </select>
+            <select
+              className="w-full p-2 border rounded"
+              value={address.district}
+              onChange={(e) =>
+                setAddress({ ...address, district: e.target.value })
+              }
+              disabled={!address.division}
+            >
+              <option value="">Select District</option>
+              {districts.map((district) => (
+                <option key={district.id} value={district.name}>
+                  {district.name}
+                </option>
+              ))}
+            </select>
+            <select
+              className="w-full p-2 border rounded"
+              value={address.upazila}
+              onChange={(e) =>
+                setAddress({ ...address, upazila: e.target.value })
+              }
+              disabled={!address.district}
+            >
+              <option value="">Select Upazila</option>
+              {upazilas.map((upazila) => (
+                <option key={upazila.id} value={upazila.name}>
+                  {upazila.name}
+                </option>
+              ))}
+            </select>
+
             <input
-              className="px-2 py-2.5 focus:border-orange-500 transition border border-gray-500/30 rounded outline-none w-full text-gray-500 resize-none"
-              name="street"
-              placeholder="Street Address (Area and Street)"
-              onChange={onChangeHandler}
-              value={address.street}
-            ></input>
-
-            <div className="flex space-x-3">
-              {/* City */}
-              <input
-                className="px-2 py-2.5 focus:border-orange-500 transition border border-gray-500/30 rounded outline-none w-full text-gray-500"
-                type="text"
-                name="city"
-                placeholder="City/District/Town"
-                onChange={onChangeHandler}
-                value={address.city}
-              />
-
-              {/* State */}
-              <input
-                className="px-2 py-2.5 focus:border-orange-500 transition border border-gray-500/30 rounded outline-none w-full text-gray-500"
-                type="text"
-                name="state"
-                placeholder="State"
-                onChange={onChangeHandler}
-                value={address.state}
-              />
-            </div>
-
-            {/* Country */}
-            <input
-              className="px-2 py-2.5 focus:border-orange-500 transition border border-gray-500/30 rounded outline-none w-full text-gray-500"
+              className="px-2 py-2.5 border rounded w-full"
               type="text"
               name="country"
               placeholder="Country"
-              onChange={onChangeHandler}
               value={address.country}
+              onChange={(e) =>
+                setAddress({ ...address, country: e.target.value })
+              }
             />
-
-            {/* Default Address Checkbox */}
             <label className="flex items-center space-x-2 text-gray-500">
               <input
                 type="checkbox"
-                name="isDefault"
                 checked={address.isDefault || false}
                 onChange={() =>
                   setAddress({ ...address, isDefault: !address.isDefault })
@@ -221,11 +284,9 @@ const AddAddress = () => {
               <span>Set as default address</span>
             </label>
           </div>
-
-          {/* Submit Button */}
           <button
             type="submit"
-            className="max-w-sm w-full mt-6 bg-orange-600 text-white py-3 hover:bg-orange-700 uppercase cursor-pointer"
+            className="max-w-sm w-full mt-6 bg-orange-600 text-white py-3 hover:bg-orange-700 uppercase"
           >
             Save address
           </button>
