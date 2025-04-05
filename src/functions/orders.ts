@@ -8,24 +8,40 @@ import {
   deleteDoc,
   getDocs,
   serverTimestamp,
+  arrayUnion,
+  getDoc,
 } from "firebase/firestore";
 
 const ordersCollection = collection(db, "orders");
 
-export const getOrdersFS = async (): Promise<Order[]> => {
+export const getOrdersFS = async (orderIds?: string[]): Promise<Order[]> => {
   const orders: Order[] = [];
 
   try {
-    const querySnapshot = await getDocs(ordersCollection);
+    if (!orderIds) {
+      const querySnapshot = await getDocs(ordersCollection);
 
-    querySnapshot.docs.forEach((doc) => {
-      const orderData = doc.data();
-      if (orderData) {
-        orders.push({ id: doc.id, ...orderData } as Order);
-      } else {
-        console.warn(`Document with ID: ${doc.id} contains no data`);
-      }
-    });
+      querySnapshot.docs.forEach((doc) => {
+        const orderData = doc.data();
+        if (orderData) {
+          orders.push({ id: doc.id, ...orderData } as Order);
+        } else {
+          console.warn(`Document with ID: ${doc.id} contains no data`);
+        }
+      });
+    } else {
+      const orderFetches = orderIds.map(async (id) => {
+        const orderDoc = await getDoc(doc(ordersCollection, id));
+        const orderData = orderDoc.data();
+        if (orderData) {
+          orders.push({ id: orderDoc.id, ...orderData } as Order);
+        } else {
+          console.warn(`Order with ID ${id} not found.`);
+        }
+      });
+
+      await Promise.all(orderFetches);
+    }
 
     return orders;
   } catch (error) {
@@ -34,19 +50,27 @@ export const getOrdersFS = async (): Promise<Order[]> => {
   }
 };
 
-export const createOrderFS = async (order: Order) => {
+export const createOrderFS = async (order: Order, userId: string) => {
   try {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id, ...rest } = order;
+
     const orderWithTimestamp = {
       ...rest,
       createdAt: serverTimestamp(),
     };
 
-    await addDoc(ordersCollection, orderWithTimestamp);
-    console.log("Order created successfully");
+    const orderRef = await addDoc(ordersCollection, orderWithTimestamp);
+    const userRef = doc(collection(db, "users"), userId);
+
+    await updateDoc(userRef, {
+      orderlist: arrayUnion(orderRef.id),
+    });
+
+    return orderRef.id;
   } catch (error) {
     console.error("Error creating order:", error);
+    return null;
   }
 };
 
