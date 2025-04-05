@@ -1,13 +1,31 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { assets } from "@/assets/assets";
 import OrderSummary from "@/components/OrderSummary";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import { useAppContext } from "@/context/AppContext";
+import { Product } from "@/types/types";
 
 const Cart = () => {
   const { router, cartItems, updateCart, getCartCount } = useAppContext();
+  const [selectedCartItems, setSelectedCartItems] = useState<string[]>([]);
+
+  const restoreSelectedCartItems = () => {
+    const restored: {
+      product: Product;
+      quantity: number;
+    }[] = [];
+
+    selectedCartItems.forEach((productId) => {
+      const selectedItem = cartItems.find(
+        ({ product }) => product.id === productId
+      ) || { product: {} as Product, quantity: 0 };
+      restored.push(selectedItem);
+    });
+
+    return restored;
+  };
 
   return (
     <>
@@ -44,6 +62,23 @@ const Cart = () => {
                 {cartItems.map(({ product, quantity }, index) => {
                   return (
                     <tr key={index}>
+                      <td>
+                        <input
+                          type="checkbox"
+                          checked={selectedCartItems.includes(product.id)}
+                          onChange={() => {
+                            let selected: string[];
+                            if (selectedCartItems.includes(product.id)) {
+                              selected = selectedCartItems.filter(
+                                (id) => id !== product.id
+                              );
+                            } else {
+                              selected = [...selectedCartItems, product.id];
+                            }
+                            setSelectedCartItems(selected);
+                          }}
+                        />
+                      </td>
                       <td className="flex items-center gap-4 py-4 md:px-4 px-1">
                         <div>
                           <div className="rounded-lg overflow-hidden bg-gray-500/10 p-2">
@@ -127,7 +162,8 @@ const Cart = () => {
             Continue Shopping
           </button>
         </div>
-        <OrderSummary />
+
+        <OrderSummary selectedCartItems={restoreSelectedCartItems()} />
       </div>
     </>
   );

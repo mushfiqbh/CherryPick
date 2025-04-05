@@ -1,5 +1,5 @@
 "use client";
-import { Address, Product } from "@/types/types";
+import { Address, Order, Payment, Product } from "@/types/types";
 import { useRouter } from "next/navigation";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useAuthContext } from "./AuthContext";
@@ -23,6 +23,19 @@ export const AppContextProvider = ({
   const [cartItems, setCartItems] = useState<
     { product: Product; quantity: number }[]
   >([]);
+  const [order, setOrder] = useState<Order>({
+    id: "",
+    userId: "",
+    products: [],
+    subTotal: 0,
+    discount: 0,
+    shippingFee: 0,
+    promoId: "",
+    total: 0,
+    address: {} as Address,
+    status: "pending",
+    payment: {} as Payment,
+  });
 
   useEffect(() => {
     const fetchProductData = async () => {
@@ -84,6 +97,8 @@ export const AppContextProvider = ({
       value={{
         currency,
         router,
+        order,
+        setOrder,
         products,
         setProducts,
         addresses,

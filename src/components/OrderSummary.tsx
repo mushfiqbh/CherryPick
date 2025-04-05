@@ -1,14 +1,18 @@
 import { useAppContext } from "@/context/AppContext";
 import { useAuthContext } from "@/context/AuthContext";
-import { getPromoFS, updatePromoUsageFS } from "@/functions/promos";
-import { Address } from "@/types/types";
+import { getPromoFS } from "@/functions/promos";
+import { Address, Product } from "@/types/types";
 import { Timestamp } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
-const OrderSummary = () => {
+const OrderSummary = ({
+  selectedCartItems,
+}: {
+  selectedCartItems: { product: Product; quantity: number }[];
+}) => {
   const { authUser } = useAuthContext();
-  const { currency, router, cartItems, addresses, getCartCount } =
+  const { currency, router, addresses, order, setOrder, getCartCount } =
     useAppContext();
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
@@ -79,10 +83,10 @@ const OrderSummary = () => {
       }
     }
 
-    if (promo.applicableProducts?.length && cartItems) {
+    if (promo.applicableProducts?.length && selectedCartItems) {
       let isNotApplicable = true;
       promo.applicableProducts.forEach((productId) => {
-        cartItems.forEach((item) => {
+        selectedCartItems.forEach((item) => {
           if (item.product.id === productId) {
             isNotApplicable = false;
           }
@@ -120,13 +124,15 @@ const OrderSummary = () => {
   };
 
   useEffect(() => {
-    const totalAmount = cartItems.reduce((total, item) => {
-      const price = item.product.offerPrice ?? item.product.price;
-      return total + price * item.quantity;
-    }, 0);
+    const totalAmount = Math.round(
+      selectedCartItems.reduce((total, item) => {
+        const price = item.product.offerPrice ?? item.product.price;
+        return total + price * item.quantity;
+      }, 0)
+    );
 
     const getShippingFee = () => {
-      if (selectedAddress && selectedAddress.state === "Dhaka") {
+      if (selectedAddress && selectedAddress.division === "Dhaka") {
         return 60;
       } else {
         return 120;
@@ -140,13 +146,39 @@ const OrderSummary = () => {
         shippingFee: getShippingFee(),
       };
     });
-  }, [cartItems, selectedAddress]);
+  }, [selectedCartItems, selectedAddress]);
 
   const createOrder = async () => {
-    if (promoId) {
-      updatePromoUsageFS(promoId);
+    if (!authUser) {
+      toast("Please Sign In");
+      return;
     }
-    router.push("/order-placed");
+
+    if (!selectedCartItems.length) {
+      toast("Please Select Items To Buy");
+      return;
+    }
+
+    if (!selectedAddress) {
+      toast("Please Select Shipping Address");
+      return;
+    }
+
+    setOrder({
+      ...order,
+      id: "",
+      promoId: promoId,
+      userId: authUser?.id,
+      products: selectedCartItems,
+      subTotal: pricing.price,
+      discount: pricing.discount,
+      shippingFee: pricing.shippingFee,
+      total: Math.round(pricing.price + pricing.shippingFee - pricing.discount),
+      address: selectedAddress,
+      status: "pending",
+    });
+
+    router.push("/checkout");
   };
 
   return (
@@ -167,7 +199,7 @@ const OrderSummary = () => {
             >
               <span>
                 {selectedAddress
-                  ? `${selectedAddress.fullName}, ${selectedAddress.street}, ${selectedAddress.city}, ${selectedAddress.state}`
+                  ? `${selectedAddress.fullName}, ${selectedAddress.area}, ${selectedAddress.upazila}, ${selectedAddress.district}`
                   : "Select Address"}
               </span>
               <svg
@@ -196,8 +228,8 @@ const OrderSummary = () => {
                     className="px-4 py-2 hover:bg-gray-500/10 cursor-pointer"
                     onClick={() => handleAddressSelect(address)}
                   >
-                    {address.fullName}, {address.street}, {address.city},{" "}
-                    {address.state}
+                    {address.fullName}, {address.area}, {address.upazila},
+                    {address.district}, {address.division}
                   </li>
                 ))}
                 <li
@@ -249,13 +281,6 @@ const OrderSummary = () => {
             </p>
           </div>
           <div className="flex justify-between">
-            <p className="text-gray-600">Tax ({pricing.tax}%)</p>
-            <p className="font-medium text-gray-800">
-              {currency}
-              {Math.floor(pricing.price * pricing.tax) / 100}
-            </p>
-          </div>
-          <div className="flex justify-between">
             <p className="text-gray-600">Discount</p>
             <p className="font-medium text-gray-800">
               {currency}
@@ -266,13 +291,9 @@ const OrderSummary = () => {
             <p>Total</p>
             <p>
               {currency}
-              {Math.floor(
-                (pricing.price +
-                  pricing.shippingFee +
-                  Math.floor(pricing.price * pricing.tax) / 100 -
-                  pricing.discount) *
-                  100
-              ) / 100}
+              {Math.round(
+                pricing.price + pricing.shippingFee - pricing.discount
+              )}
             </p>
           </div>
         </div>
