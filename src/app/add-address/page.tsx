@@ -49,13 +49,14 @@ const AddAddress = () => {
 
   useEffect(() => {
     if (address.division) {
-      const divisionId = divisions.find(({ id, name }) => {
-        if (name === address.division) {
-          return id;
-        }
-      });
+      const selectedDivision = divisions.find(
+        ({ name }) => name === address.division
+      );
+
       axios
-        .get(`https://bdapi.vercel.app/api/v.1/district/${divisionId}`)
+        .get(
+          `https://bdapi.vercel.app/api/v.1/district/${selectedDivision?.id}`
+        )
         .then((res) => {
           setDistricts(res.data.data);
           setUpazilas([]);
@@ -65,13 +66,14 @@ const AddAddress = () => {
 
   useEffect(() => {
     if (address.district) {
-      const districtId = districts.find(({ id, name }) => {
-        if (name === address.district) {
-          return id;
-        }
-      });
+      const selectedDistrict = districts.find(
+        ({ name }) => name === address.district
+      );
+
       axios
-        .get(`https://bdapi.vercel.app/api/v.1/upazilla/${districtId}`)
+        .get(
+          `https://bdapi.vercel.app/api/v.1/upazilla/${selectedDistrict?.id}`
+        )
         .then((res) => {
           setUpazilas(res.data.data);
         });
@@ -88,21 +90,16 @@ const AddAddress = () => {
     e.preventDefault();
     try {
       if (address.id) {
-        updateAddressFS(address);
-        setAddresses(() => {
-          const updated = addresses.filter((value) =>
-            value.id === address.id ? address : value
-          );
-          return updated;
-        });
+        await updateAddressFS(address);
+        setAddresses((prev) =>
+          prev.map((value) => (value.id === address.id ? address : value))
+        );
         toast("Address Updated Successfully");
       } else if (authUser) {
         const id = await addAddressFS(authUser.id, address);
         if (id) {
-          setAddresses(() => {
-            const newAddress = { ...address, id, userId: authUser.id };
-            return [...addresses, newAddress];
-          });
+          const newAddress = { ...address, id, userId: authUser.id };
+          setAddresses((prev) => [...prev, newAddress]);
           toast("Address Saved Successfully");
         }
       }
@@ -227,6 +224,7 @@ const AddAddress = () => {
               className="w-full p-2 border rounded"
               value={address.division}
               onChange={(e) =>
+                e.target.value &&
                 setAddress({ ...address, division: e.target.value })
               }
             >
@@ -291,7 +289,7 @@ const AddAddress = () => {
           </div>
           <button
             type="submit"
-            className="max-w-sm w-full mt-6 bg-orange-600 text-white py-3 hover:bg-orange-700 uppercase"
+            className="max-w-sm w-full mt-6 bg-orange-600 text-white py-3 hover:bg-orange-700 uppercase cursor-pointer"
           >
             Save address
           </button>

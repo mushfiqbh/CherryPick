@@ -13,7 +13,7 @@ import { useAuthContext } from "@/context/AuthContext";
 
 const Checkout = () => {
   const { authUser, setAuthUser } = useAuthContext();
-  const { order } = useAppContext();
+  const { order, currency } = useAppContext();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [payment, setPayment] = useState<Payment>({
@@ -39,15 +39,23 @@ const Checkout = () => {
       return;
     }
 
-    if (!payment.sentTime || !authUser) {
-      toast("Order creation failed: Missing payment time or user.");
+    if (!order.address.phoneNumber) {
+      toast("Address is not selected or phone number missing");
+      return;
+    }
+
+    if (!payment.sentTime && !payment.senderNumber) {
+      toast("Order creation failed: Missing payment time");
       setPayment((prev) => ({ ...prev, status: "failed" }));
       return;
     }
 
-    try {
-      setLoading(true);
+    if (!authUser) {
+      toast("Order creation failed: Missing user.");
+      return;
+    }
 
+    try {
       const orderId = await createOrderFS(
         { ...order, payment: { ...payment, status: "pending" } },
         authUser.id
@@ -56,13 +64,14 @@ const Checkout = () => {
       if (orderId) {
         setAuthUser({
           ...authUser,
-          orderIds: [...(authUser.orderIds ?? []), orderId],
+          orderIds: [...(authUser.orderIds || []), orderId],
         });
 
         if (order.promoId) {
           await updatePromoUsageFS(order.promoId);
         }
 
+        setLoading(true);
         toast("Order created successfully!");
         router.push("/orders");
       } else {
@@ -101,7 +110,7 @@ const Checkout = () => {
               <span>
                 {item.product.name} (x{item.quantity})
               </span>
-              <span>${item.product.price * item.quantity}</span>
+              <span>${Math.round(item.product.price * item.quantity)}</span>
             </div>
           ))}
         </div>
@@ -110,6 +119,12 @@ const Checkout = () => {
           <div>Discount: -${order.discount}</div>
           <div>Shipping: ${order.shippingFee}</div>
           <div className="font-semibold">Total: ${order.total}</div>
+          <div className="font-semibold">
+            Cash On Delivery: {currency}
+            {payment.type === "partial" && order.total >= 200
+              ? order.total - 200
+              : 0}
+          </div>
         </div>
       </div>
 
@@ -147,7 +162,7 @@ const Checkout = () => {
             ) : (
               <Image src={assets.uncheckedIcon} alt="unchecked" width={20} />
             )}
-            Pay 200 Tk Advance
+            Pay {order.total < 200 ? order.total : 200} Tk Advance
           </div>
           <div
             className="w-1/2 p-2 flex items-center gap-1 cursor-pointer hover:bg-slate-300"

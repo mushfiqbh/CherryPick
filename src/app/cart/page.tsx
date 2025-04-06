@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { assets } from "@/assets/assets";
 import OrderSummary from "@/components/OrderSummary";
 import Image from "next/image";
@@ -11,6 +11,29 @@ const Cart = () => {
   const { router, cartItems, updateCart, getCartCount } = useAppContext();
   const [selectedCartItems, setSelectedCartItems] = useState<string[]>([]);
 
+  useEffect(() => {
+    const stored = localStorage.getItem("selected_cart_items");
+    if (stored) {
+      try {
+        const ids = JSON.parse(stored);
+        if (Array.isArray(ids)) {
+          setSelectedCartItems(ids);
+        }
+      } catch (error) {
+        console.warn("Invalid JSON in localStorage:", error);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (selectedCartItems.length) {
+      localStorage.setItem(
+        "selected_cart_items",
+        JSON.stringify(selectedCartItems)
+      );
+    }
+  }, [selectedCartItems]);
+
   const restoreSelectedCartItems = () => {
     const restored: {
       product: Product;
@@ -20,8 +43,10 @@ const Cart = () => {
     selectedCartItems.forEach((productId) => {
       const selectedItem = cartItems.find(
         ({ product }) => product.id === productId
-      ) || { product: {} as Product, quantity: 0 };
-      restored.push(selectedItem);
+      );
+      if (selectedItem) {
+        restored.push(selectedItem);
+      }
     });
 
     return restored;
@@ -59,100 +84,138 @@ const Cart = () => {
                 </tr>
               </thead>
               <tbody>
-                {cartItems.map(({ product, quantity }, index) => {
-                  return (
-                    <tr key={index}>
-                      <td>
-                        <input
-                          type="checkbox"
-                          checked={selectedCartItems.includes(product.id)}
-                          onChange={() => {
-                            let selected: string[];
-                            if (selectedCartItems.includes(product.id)) {
-                              selected = selectedCartItems.filter(
-                                (id) => id !== product.id
-                              );
-                            } else {
-                              selected = [...selectedCartItems, product.id];
-                            }
-                            setSelectedCartItems(selected);
-                          }}
-                        />
-                      </td>
-                      <td className="flex items-center gap-4 py-4 md:px-4 px-1">
-                        <div>
-                          <div className="rounded-lg overflow-hidden bg-gray-500/10 p-2">
-                            <Image
-                              src={product.images[0]}
-                              alt={product.name}
-                              className="w-16 h-auto object-cover mix-blend-multiply"
-                              width={1280}
-                              height={720}
+                {!cartItems.length
+                  ? Array(3)
+                      .fill(null)
+                      .map((_, index) => {
+                        return (
+                          <tr key={index}>
+                            <td>
+                              <div className="w-4 h-4 rounded bg-gray-300 animate-pulse" />
+                            </td>
+                            <td className="flex items-center gap-4 py-4 md:px-4 px-1">
+                              <div className="rounded-lg overflow-hidden bg-gray-200 p-2">
+                                <div className="w-16 h-16 bg-gray-300 animate-pulse rounded" />
+                              </div>
+                              <div className="text-sm hidden md:block space-y-2">
+                                <div className="w-24 h-4 bg-gray-300 rounded animate-pulse" />
+                                <div className="w-16 h-3 bg-gray-200 rounded animate-pulse" />
+                              </div>
+                            </td>
+                            <td className="py-4 md:px-4 px-1 text-gray-600">
+                              <div className="w-10 h-4 bg-gray-300 rounded animate-pulse" />
+                            </td>
+                            <td className="py-4 md:px-4 px-1">
+                              <div className="flex items-center md:gap-2 gap-1">
+                                <div className="w-4 h-4 bg-gray-300 rounded animate-pulse" />
+                                <div className="w-8 h-4 bg-gray-300 rounded animate-pulse mx-1" />
+                                <div className="w-4 h-4 bg-gray-300 rounded animate-pulse" />
+                              </div>
+                            </td>
+                            <td className="py-4 md:px-4 px-1 text-gray-600">
+                              <div className="w-12 h-4 bg-gray-300 rounded animate-pulse" />
+                            </td>
+                          </tr>
+                        );
+                      })
+                  : cartItems.map(({ product, quantity }, index) => {
+                      return (
+                        <tr key={index}>
+                          <td>
+                            <input
+                              type="checkbox"
+                              checked={selectedCartItems.includes(product.id)}
+                              onChange={() => {
+                                let selected: string[];
+                                if (selectedCartItems.includes(product.id)) {
+                                  selected = selectedCartItems.filter(
+                                    (id) => id !== product.id
+                                  );
+                                } else {
+                                  selected = [...selectedCartItems, product.id];
+                                }
+                                setSelectedCartItems(selected);
+                              }}
                             />
-                          </div>
-                          <button
-                            className="md:hidden text-xs text-orange-600 mt-1 cursor-pointer"
-                            onClick={() => updateCart(product.id, 0)}
-                          >
-                            Remove
-                          </button>
-                        </div>
-                        <div className="text-sm hidden md:block">
-                          <p className="text-gray-800">{product.name}</p>
-                          <button
-                            className="text-xs text-orange-600 mt-1 cursor-pointer"
-                            onClick={() => updateCart(product.id, 0)}
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      </td>
+                          </td>
+                          <td className="flex items-center gap-4 py-4 md:px-4 px-1">
+                            <div>
+                              <div className="rounded-lg overflow-hidden bg-gray-500/10 p-2">
+                                <Image
+                                  src={product.images[0]}
+                                  alt={product.name}
+                                  className="w-16 h-auto object-cover mix-blend-multiply"
+                                  width={1280}
+                                  height={720}
+                                />
+                              </div>
+                              <button
+                                className="md:hidden text-xs text-orange-600 mt-1 cursor-pointer"
+                                onClick={() => updateCart(product.id, 0)}
+                              >
+                                Remove
+                              </button>
+                            </div>
+                            <div className="text-sm hidden md:block">
+                              <p className="text-gray-800">{product.name}</p>
+                              <button
+                                className="text-xs text-orange-600 mt-1 cursor-pointer"
+                                onClick={() => updateCart(product.id, 0)}
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          </td>
 
-                      <td className="py-4 md:px-4 px-1 text-gray-600">
-                        ${product.offerPrice}
-                      </td>
-                      <td className="py-4 md:px-4 px-1">
-                        <div className="flex items-center md:gap-2 gap-1">
-                          <button
-                            onClick={() => updateCart(product.id, quantity - 1)}
-                            className="cursor-pointer"
-                            disabled={quantity == 1}
-                          >
-                            <Image
-                              src={assets.decrease_arrow}
-                              alt="decrease_arrow"
-                              className="w-4 h-4"
-                            />
-                          </button>
+                          <td className="py-4 md:px-4 px-1 text-gray-600">
+                            ${product.offerPrice}
+                          </td>
+                          <td className="py-4 md:px-4 px-1">
+                            <div className="flex items-center md:gap-2 gap-1">
+                              <button
+                                onClick={() =>
+                                  updateCart(product.id, quantity - 1)
+                                }
+                                className="cursor-pointer"
+                                disabled={quantity == 1}
+                              >
+                                <Image
+                                  src={assets.decrease_arrow}
+                                  alt="decrease_arrow"
+                                  className="w-4 h-4"
+                                />
+                              </button>
 
-                          <span className="w-8 text-center appearance-none">
-                            {quantity}
-                          </span>
+                              <span className="w-8 text-center appearance-none">
+                                {quantity}
+                              </span>
 
-                          <button
-                            onClick={() => updateCart(product.id, quantity + 1)}
-                            className="cursor-pointer"
-                          >
-                            <Image
-                              src={assets.increase_arrow}
-                              alt="increase_arrow"
-                              className="w-4 h-4"
-                            />
-                          </button>
-                        </div>
-                      </td>
-                      <td className="py-4 md:px-4 px-1 text-gray-600">
-                        ${(product.offerPrice * quantity).toFixed(2)}
-                      </td>
-                    </tr>
-                  );
-                })}
+                              <button
+                                onClick={() =>
+                                  updateCart(product.id, quantity + 1)
+                                }
+                                className="cursor-pointer"
+                              >
+                                <Image
+                                  src={assets.increase_arrow}
+                                  alt="increase_arrow"
+                                  className="w-4 h-4"
+                                />
+                              </button>
+                            </div>
+                          </td>
+                          <td className="py-4 md:px-4 px-1 text-gray-600">
+                            ${(product.offerPrice * quantity).toFixed(2)}
+                          </td>
+                        </tr>
+                      );
+                    })}
               </tbody>
             </table>
           </div>
           <button
             onClick={() => router.push("/all-products")}
-            className="group flex items-center mt-6 gap-2 text-orange-600"
+            className="group flex items-center mt-6 gap-2 text-orange-600 cursor-pointer"
           >
             <Image
               className="group-hover:-translate-x-1 transition"

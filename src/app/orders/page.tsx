@@ -24,7 +24,7 @@ const MyOrders = () => {
     };
 
     fetchOrders();
-  }, [authUser?.orderIds]);
+  }, [authUser]);
 
   const paymentStatusMsg = (
     status: "COD" | "paid" | "unpaid" | "pending" | "failed"
@@ -52,64 +52,71 @@ const MyOrders = () => {
             <Loading />
           ) : (
             <div className="max-w-5xl border-t border-gray-300 text-sm">
-              {orders.map((order, index) => (
-                <div
-                  key={index}
-                  className="flex flex-col md:flex-row gap-5 justify-between p-5 border-b border-gray-300"
-                >
-                  <div className="flex-1 flex gap-5 max-w-80">
-                    <Image
-                      className="max-w-16 max-h-16 object-cover"
-                      src={assets.box_icon}
-                      alt="box_icon"
-                    />
-                    <p className="flex flex-col gap-3">
-                      <span className="font-medium text-base">
-                        {order.products
-                          .map(
-                            (item) => item?.product.name + ` x ${item.quantity}`
-                          )
-                          .join(", ")}
-                      </span>
-                      <span>Items : {order.products.length}</span>
+              {orders.length ? (
+                orders.map((order, index) => (
+                  <div
+                    key={index}
+                    className="flex flex-col md:flex-row gap-5 justify-between p-5 border-b border-gray-300"
+                  >
+                    <div className="flex-1 flex gap-5 max-w-80">
+                      <Image
+                        className="max-w-16 max-h-16 object-cover"
+                        src={assets.box_icon}
+                        alt="box_icon"
+                      />
+                      <p className="flex flex-col gap-3">
+                        <span className="font-medium text-base">
+                          {order.products
+                            .map(
+                              (item) =>
+                                item?.product.name + ` x ${item.quantity}`
+                            )
+                            .join(", ")}
+                        </span>
+                        <span>Items : {order.products.length}</span>
+                      </p>
+                    </div>
+                    <div>
+                      <p>
+                        <span className="font-medium">
+                          {order.address.fullName}
+                        </span>
+                        <br />
+                        <span>{order.address.area}</span>
+                        <br />
+                        <span>{`${order.address.upazila}, ${order.address.district}`}</span>
+                        <br />
+                        <span>{order.address.phoneNumber}</span>
+                      </p>
+                    </div>
+                    <p className="font-medium my-auto">
+                      {currency}
+                      {order.subTotal}
                     </p>
+                    <div>
+                      <p className="flex flex-col">
+                        <span>Method : COD</span>
+                        <span>
+                          Date :{" "}
+                          {order.createdAt?.seconds
+                            ? new Date(
+                                order.createdAt.seconds * 1000
+                              ).toDateString()
+                            : null}
+                        </span>
+                        <span>Order : {order?.status}</span>
+                        <span>
+                          Payment : {paymentStatusMsg(order?.payment?.status)}
+                        </span>
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p>
-                      <span className="font-medium">
-                        {order.address.fullName}
-                      </span>
-                      <br />
-                      <span>{order.address.area}</span>
-                      <br />
-                      <span>{`${order.address.upazila}, ${order.address.district}`}</span>
-                      <br />
-                      <span>{order.address.phoneNumber}</span>
-                    </p>
-                  </div>
-                  <p className="font-medium my-auto">
-                    {currency}
-                    {order.subTotal}
-                  </p>
-                  <div>
-                    <p className="flex flex-col">
-                      <span>Method : COD</span>
-                      <span>
-                        Date :{" "}
-                        {order.createdAt?.seconds
-                          ? new Date(
-                              order.createdAt.seconds * 1000
-                            ).toDateString()
-                          : null}
-                      </span>
-                      <span>Order : {order?.status}</span>
-                      <span>
-                        Payment : {paymentStatusMsg(order?.payment?.status)}
-                      </span>
-                    </p>
-                  </div>
+                ))
+              ) : (
+                <div className="w-full text-3xl flex items-center justify-center pt-20">
+                  You have no order!
                 </div>
-              ))}
+              )}
             </div>
           )}
         </div>
