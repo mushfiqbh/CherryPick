@@ -11,7 +11,7 @@ export interface User {
     product: Product;
     quantity: number;
   }[];
-  orderIds: string[];
+  orderIds?: string[];
   wishlist?: Product[];
   orders?: string[];
   addresses?: string[];
