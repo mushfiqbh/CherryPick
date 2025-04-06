@@ -1,10 +1,11 @@
 "use client";
 
+import { ReactNode } from "react";
 import { useAuthContext } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-const AuthGuard = ({ children }) => {
+const AuthGuard = ({ children }: { children: ReactNode }) => {
   const { authUser } = useAuthContext();
   const router = useRouter();
   const [loading, setLoading] = useState(true);

@@ -98,8 +98,13 @@ const AddAddress = () => {
         toast("Address Updated Successfully");
       } else if (authUser) {
         const id = await addAddressFS(authUser.id, address);
-        setAddresses([...addresses, { ...address, id, userId: authUser.id }]);
-        toast("Address Saved Successfully");
+        if (id) {
+          setAddresses(() => {
+            const newAddress = { ...address, id, userId: authUser.id };
+            return [...addresses, newAddress];
+          });
+          toast("Address Saved Successfully");
+        }
       }
 
       setAddress({
