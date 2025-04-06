@@ -1,4 +1,7 @@
 import logo from "./CherryPick_Brand.png";
+import whatsapp_icon from "./whatsapp.svg";
+import telegram_icon from "./telegram.svg";
+import messenger_icon from "./messenger.svg";
 import checkedIcon from "./icons8_check.png";
 import uncheckedIcon from "./icons8_uncheck.png";
 import search_icon from "./search_icon.svg";
@@ -51,6 +54,9 @@ import product_details_page_apple_earphone_image5 from "./product_details_page_a
 
 export const assets = {
   logo,
+  whatsapp_icon,
+  messenger_icon,
+  telegram_icon,
   checkedIcon,
   uncheckedIcon,
   search_icon,

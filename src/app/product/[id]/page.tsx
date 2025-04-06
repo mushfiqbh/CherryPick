@@ -10,12 +10,23 @@ import Loading from "@/components/Loading";
 import { useAppContext } from "@/context/AppContext";
 import React from "react";
 import type { Product } from "@/types/types";
+import Link from "next/link";
 
 const Product = () => {
   const { id } = useParams();
-  const { products, router, updateCart } = useAppContext();
+  const { router, cartItems, products, updateCart } = useAppContext();
   const [mainImage, setMainImage] = useState<string | null>(null);
   const [productData, setProductData] = useState<Product | null>(null);
+  const [isAdded, setIsAdded] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (cartItems) {
+      const isExist = cartItems.find(
+        (item) => item.product.id === productData?.id
+      );
+      setIsAdded(isExist ? true : false);
+    }
+  }, [cartItems, productData?.id]);
 
   useEffect(() => {
     const fetchProductData = async () => {
@@ -126,24 +137,45 @@ const Product = () => {
 
             <div className="flex items-center mt-10 gap-4">
               <button
-                onClick={() => productData && updateCart(productData.id, 1)}
-                disabled={!productData}
-                className="w-full py-3.5 bg-gray-100 text-gray-800/80 hover:bg-gray-200 transition cursor-pointer"
-              >
-                Add to Cart
-              </button>
-              <button
                 onClick={() => {
                   if (productData) {
-                    updateCart(productData.id, 1);
-                    router.push("/cart");
+                    return isAdded
+                      ? router.push("/cart")
+                      : updateCart(productData.id, 1);
                   }
                 }}
                 disabled={!productData}
-                className="w-full py-3.5 bg-orange-500 text-white hover:bg-orange-600 transition cursor-pointer"
+                className="w-full py-3.5 bg-gray-100 text-gray-800/80 hover:bg-gray-200 transition cursor-pointer"
               >
-                Buy now
+                {isAdded ? "Added to Cart (Goto Cart)" : "Add to Cart"}
               </button>
+              <div className="w-full py-3 flex items-center justify-around bg-sky-100 transition">
+                <b>Chat with Seller</b>
+                <Link href="https://wa.me/8801737542444" target="_blank">
+                  <Image
+                    src={assets.whatsapp_icon}
+                    alt="whatsapp_icon"
+                    width={30}
+                    className="cursor-pointer hover:-translate-y-1"
+                  />
+                </Link>
+                <Link href="https://m.me/cherrypickbd" target="_blank">
+                  <Image
+                    src={assets.messenger_icon}
+                    alt="messenger_icon"
+                    width={30}
+                    className="cursor-pointer hover:-translate-y-1"
+                  />
+                </Link>
+                <Link href="https://t.me/mushfiqbh" target="_blank">
+                  <Image
+                    src={assets.telegram_icon}
+                    alt="telegram_icon"
+                    width={30}
+                    className="cursor-pointer hover:-translate-y-1"
+                  />
+                </Link>
+              </div>
             </div>
           </div>
         </div>
