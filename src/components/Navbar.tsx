@@ -14,41 +14,54 @@ const Navbar = () => {
   const { authUser } = useAuthContext();
 
   return (
-    <nav className="min-h-16 flex items-center justify-between px-6 md:px-16 lg:px-32 py-0 border-b border-gray-300 text-gray-700">
-      <h1 className={`text-4xl ${UrbanJungle.className}`}>CHERRY PICK</h1>
-      <div className="flex items-center gap-4 lg:gap-8 max-md:hidden">
-        <Link href="/" className="hover:text-gray-900 transition">
-          Home
-        </Link>
-        <Link href="/all-products" className="hover:text-gray-900 transition">
-          Shop
-        </Link>
-        <Link href="/" className="hover:text-gray-900 transition">
-          About Us
-        </Link>
-        <Link href="/" className="hover:text-gray-900 transition">
-          Contact
-        </Link>
+    <nav className="w-full fixed z-100 top-0 left-0 min-h-16 md:flex items-center px-6 md:px-16 lg:px-32 bg-white text-gray-700">
+      <div className="w-full flex items-center justify-between">
+        <h1
+          className={`w-full md:w-auto text-4xl text-center ${UrbanJungle.className}`}
+        >
+          CHERRY PICK
+        </h1>
+        <div className="flex items-center gap-4 lg:gap-8 max-md:hidden">
+          <Link href="/" className="hover:text-gray-900 transition">
+            Home
+          </Link>
+          <Link href="/orders" className="hover:text-gray-900 transition">
+            Orders
+          </Link>
+          <Link href="/address" className="hover:text-gray-900 transition">
+            Address
+          </Link>
+          <Link href="/" className="hover:text-gray-900 transition">
+            Contact
+          </Link>
 
-        {authUser?.role === "seller" && (
-          <button
-            onClick={() => router.push("/seller")}
-            className="text-xs border px-4 py-1.5 rounded-full"
+          {authUser?.role === "seller" && (
+            <button
+              onClick={() => router.push("/seller")}
+              className="text-xs border px-4 py-1.5 rounded-full"
+            >
+              Seller Dashboard
+            </button>
+          )}
+        </div>
+
+        <ul className="hidden md:flex items-center gap-4 ">
+          <Link
+            href="/cart"
+            className="flex items-center gap-2 hover:text-gray-900 transition"
           >
-            Seller Dashboard
+            <Image className="w-4 h-4" src={assets.cart_icon} alt="cart icon" />
+            Cart
+          </Link>
+          <button className="flex items-center gap-2 hover:text-gray-900 transition cursor-pointer">
+            <Image src={assets.user_icon} alt="user icon" />
+            Account
           </button>
-        )}
+        </ul>
       </div>
 
-      <ul className="hidden md:flex items-center gap-4 ">
-        <Image className="w-4 h-4" src={assets.search_icon} alt="search icon" />
-        <button className="flex items-center gap-2 hover:text-gray-900 transition">
-          <Image src={assets.user_icon} alt="user icon" />
-          Account
-        </button>
-      </ul>
-
-      <div className="flex items-center md:hidden gap-3">
+      {/* For Mobile Version */}
+      <div className="flex items-center justify-between md:hidden gap-3 py-2">
         {authUser?.role === "seller" && (
           <button
             onClick={() => router.push("/seller")}
@@ -57,6 +70,13 @@ const Navbar = () => {
             Seller Dashboard
           </button>
         )}
+        <Link
+          href="/cart"
+          className="flex items-center gap-2 hover:text-gray-900 transition"
+        >
+          <Image className="w-4 h-4" src={assets.cart_icon} alt="cart icon" />
+          Cart
+        </Link>
         <button className="flex items-center gap-2 hover:text-gray-900 transition">
           <Image src={assets.user_icon} alt="user icon" />
           Account

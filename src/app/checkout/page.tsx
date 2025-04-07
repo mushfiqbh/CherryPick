@@ -61,7 +61,7 @@ const Checkout = () => {
         authUser.id
       );
 
-      if (orderId) {
+      if (orderId?.length) {
         setAuthUser({
           ...authUser,
           orderIds: [...(authUser.orderIds || []), orderId],

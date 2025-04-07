@@ -170,7 +170,7 @@ const OrderSummary = ({
       ...order,
       id: "",
       promoId: promoId,
-      userId: authUser?.id,
+      userId: authUser.id,
       products: selectedCartItems,
       subTotal: pricing.price,
       discount: pricing.discount,
@@ -235,7 +235,7 @@ const OrderSummary = ({
                   </li>
                 ))}
                 <li
-                  onClick={() => router.push("/add-address")}
+                  onClick={() => router.push("/address")}
                   className="px-4 py-2 hover:bg-gray-500/10 cursor-pointer text-center"
                 >
                   + Add/Manage Your Addresses

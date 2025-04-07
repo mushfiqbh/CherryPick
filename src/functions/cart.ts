@@ -1,11 +1,6 @@
 import { db } from "@/lib/firebase";
 import { Product } from "@/types/types";
-import {
-  deleteField,
-  doc,
-  getDoc,
-  updateDoc,
-} from "firebase/firestore";
+import { deleteField, doc, getDoc, updateDoc } from "firebase/firestore";
 
 export const getUserCart = async (
   userId: string
@@ -49,7 +44,11 @@ export const getUserCart = async (
   }
 };
 
-export const manageCartFS = async (userId: string, productId: string, quantity: number) => {
+export const manageCartFS = async (
+  userId: string,
+  productId: string,
+  quantity: number
+) => {
   try {
     const userRef = doc(db, "users", userId);
     const userSnap = await getDoc(userRef);

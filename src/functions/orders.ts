@@ -57,6 +57,7 @@ export const createOrderFS = async (order: Order, userId: string) => {
 
     const orderWithTimestamp = {
       ...rest,
+      userId,
       createdAt: serverTimestamp(),
     };
 
@@ -64,7 +65,7 @@ export const createOrderFS = async (order: Order, userId: string) => {
     const userRef = doc(collection(db, "users"), userId);
 
     await updateDoc(userRef, {
-      orderlist: arrayUnion(orderRef.id),
+      orderIds: arrayUnion(orderRef.id),
     });
 
     return orderRef.id;
