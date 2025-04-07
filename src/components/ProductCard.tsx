@@ -1,3 +1,5 @@
+"use client"
+
 import React from "react";
 import { assets } from "@/assets/assets";
 import Image from "next/image";
@@ -17,6 +19,7 @@ const ProductCard = ({ product }: { product: Product }) => {
     >
       <div className="cursor-pointer group relative bg-gray-500/10 rounded-lg w-full h-52 flex items-center justify-center">
         <Image
+          priority
           src={product.images[0]}
           alt={product.name}
           className="group-hover:scale-105 transition object-cover w-4/5 h-4/5 md:w-full md:h-full"

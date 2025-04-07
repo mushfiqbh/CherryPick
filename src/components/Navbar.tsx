@@ -16,14 +16,6 @@ const Navbar = () => {
   return (
     <nav className="min-h-16 flex items-center justify-between px-6 md:px-16 lg:px-32 py-0 border-b border-gray-300 text-gray-700">
       <h1 className={`text-4xl ${UrbanJungle.className}`}>CHERRY PICK</h1>
-      {/* <Image
-        className="cursor-pointer w-36 md:w-32"
-        onClick={() => router.push("/")}
-        src={assets.logo}
-        alt="logo"
-        height={36}
-        width={144}
-      /> */}
       <div className="flex items-center gap-4 lg:gap-8 max-md:hidden">
         <Link href="/" className="hover:text-gray-900 transition">
           Home

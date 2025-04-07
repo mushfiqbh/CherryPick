@@ -1,3 +1,5 @@
+"use client"
+
 import { useAppContext } from "@/context/AppContext";
 import { useAuthContext } from "@/context/AuthContext";
 import { getPromoFS } from "@/functions/promos";
