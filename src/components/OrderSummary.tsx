@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useAppContext } from "@/context/AppContext";
 import { useAuthContext } from "@/context/AuthContext";
@@ -14,8 +14,7 @@ const OrderSummary = ({
   selectedCartItems: { product: Product; quantity: number }[];
 }) => {
   const { authUser } = useAuthContext();
-  const { currency, router, addresses, order, setOrder, getCartCount } =
-    useAppContext();
+  const { router, addresses, order, setOrder, getCartCount } = useAppContext();
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const [promoCode, setPromoCode] = useState<string>("");
@@ -271,28 +270,22 @@ const OrderSummary = ({
         <div className="space-y-4">
           <div className="flex justify-between text-base font-medium">
             <p className="uppercase text-gray-600">Items {getCartCount()}</p>
-            <p className="text-gray-800">
-              {currency}
-              {pricing.price}
-            </p>
+            <p className="text-gray-800">৳ {pricing.price}</p>
           </div>
           <div className="flex justify-between">
             <p className="text-gray-600">Shipping Fee</p>
             <p className="font-medium text-gray-800">
-              {pricing.shippingFee || "Free"}
+              ৳ {pricing.shippingFee || "Free"}
             </p>
           </div>
           <div className="flex justify-between">
             <p className="text-gray-600">Discount</p>
-            <p className="font-medium text-gray-800">
-              {currency}
-              {pricing.discount}
-            </p>
+            <p className="font-medium text-gray-800">৳ {pricing.discount}</p>
           </div>
           <div className="flex justify-between text-lg md:text-xl font-medium border-t pt-3">
             <p>Total</p>
             <p>
-              {currency}
+              {"৳ "}
               {Math.round(
                 pricing.price + pricing.shippingFee - pricing.discount
               )}

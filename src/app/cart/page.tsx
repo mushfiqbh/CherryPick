@@ -168,7 +168,7 @@ const Cart = () => {
                           </td>
 
                           <td className="py-4 md:px-4 px-1 text-gray-600">
-                            ${product.offerPrice}
+                            ৳ {product.offerPrice}
                           </td>
                           <td className="py-4 md:px-4 px-1">
                             <div className="flex items-center md:gap-2 gap-1">
@@ -205,7 +205,7 @@ const Cart = () => {
                             </div>
                           </td>
                           <td className="py-4 md:px-4 px-1 text-gray-600">
-                            ${(product.offerPrice * quantity).toFixed(2)}
+                            ৳ {(product.offerPrice * quantity).toFixed(2)}
                           </td>
                         </tr>
                       );
@@ -214,7 +214,7 @@ const Cart = () => {
             </table>
           </div>
           <button
-            onClick={() => router.push("/all-products")}
+            onClick={() => router.push("/products")}
             className="group flex items-center mt-6 gap-2 text-orange-600 cursor-pointer"
           >
             <Image

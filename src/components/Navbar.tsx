@@ -17,6 +17,7 @@ const Navbar = () => {
     <nav className="w-full fixed z-100 top-0 left-0 min-h-16 md:flex items-center px-6 md:px-16 lg:px-32 bg-white text-gray-700">
       <div className="w-full flex items-center justify-between">
         <h1
+          onClick={() => router.push("/")}
           className={`w-full md:w-auto text-4xl text-center ${UrbanJungle.className}`}
         >
           CHERRY PICK
@@ -53,7 +54,10 @@ const Navbar = () => {
             <Image className="w-4 h-4" src={assets.cart_icon} alt="cart icon" />
             Cart
           </Link>
-          <button className="flex items-center gap-2 hover:text-gray-900 transition cursor-pointer">
+          <button
+            onClick={() => router.push("/auth/login")}
+            className="flex items-center gap-2 hover:text-gray-900 transition cursor-pointer"
+          >
             <Image src={assets.user_icon} alt="user icon" />
             Account
           </button>
@@ -77,7 +81,10 @@ const Navbar = () => {
           <Image className="w-4 h-4" src={assets.cart_icon} alt="cart icon" />
           Cart
         </Link>
-        <button className="flex items-center gap-2 hover:text-gray-900 transition">
+        <button
+          onClick={() => router.push("/auth/login")}
+          className="flex items-center gap-2 hover:text-gray-900 transition"
+        >
           <Image src={assets.user_icon} alt="user icon" />
           Account
         </button>

@@ -13,7 +13,7 @@ import { useAuthContext } from "@/context/AuthContext";
 
 const Checkout = () => {
   const { authUser, setAuthUser } = useAuthContext();
-  const { order, currency } = useAppContext();
+  const { order } = useAppContext();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [payment, setPayment] = useState<Payment>({
@@ -110,17 +110,32 @@ const Checkout = () => {
               <span>
                 {item.product.name} (x{item.quantity})
               </span>
-              <span>${Math.round(item.product.price * item.quantity)}</span>
+              <span>
+                ৳
+                {Math.round(
+                  (item.product.offerPrice ?? item.product.price) *
+                    item.quantity
+                )}
+              </span>
             </div>
           ))}
         </div>
-        <div className="text-right space-y-2">
-          <div>Subtotal: ${order.subTotal}</div>
-          <div>Discount: -${order.discount}</div>
-          <div>Shipping: ${order.shippingFee}</div>
-          <div className="font-semibold">Total: ${order.total}</div>
+        <div className="text-right grid grid-cols-2 gap-x-6 gap-y-2 justify-end w-fit ml-auto">
+          <div>Subtotal:</div>
+          <div>৳{order.subTotal}</div>
+
+          <div>Discount:</div>
+          <div>-৳{order.discount}</div>
+
+          <div>Shipping:</div>
+          <div>৳{order.shippingFee}</div>
+
+          <div className="font-semibold">Total:</div>
+          <div className="font-semibold">৳{order.total}</div>
+
+          <div className="font-semibold">Cash On Delivery:</div>
           <div className="font-semibold">
-            Cash On Delivery: {currency}
+            ৳
             {payment.type === "partial" && order.total >= 200
               ? order.total - 200
               : 0}
